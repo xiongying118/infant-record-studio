@@ -1062,6 +1062,41 @@
     try{ if(typeof global.toast==="function"){ global.toast(msg,"warn"); return; } }catch(e){}
     try{ global.alert(msg); }catch(e){}
   }
+  /* ★ 居中确认弹窗：替代原生 confirm，返回 Promise<boolean>。
+     opt: {title, sub, lead, leadDay, items:[str], note, question, okText, noText} */
+  function lrConfirm(opt){
+    opt=opt||{};
+    return new Promise(function(resolve){
+      var mask=document.createElement("div"); mask.className="lr-mask";
+      var items=(opt.items||[]).map(function(s){ return "<li>"+esc(s)+"</li>"; }).join("");
+      var html='<div class="lr-dlg" role="dialog" aria-modal="true">'+
+        '<div class="lr-dlg-h"><div class="lr-dlg-ic">⚠</div><div>'+
+          '<h3>'+esc(opt.title||"请确认")+'</h3>'+
+          (opt.sub?'<div class="lr-dlg-sub">'+esc(opt.sub)+'</div>':'')+
+        '</div></div>'+
+        '<div class="lr-dlg-b">'+
+          (opt.lead?'<p class="lr-dlg-lead">'+esc(opt.lead)+
+            (opt.leadDay?' <span class="lr-dlg-day">'+esc(opt.leadDay)+'</span>':'')+'：</p>':'')+
+          (items?'<div class="lr-dlg-list"><ul>'+items+'</ul></div>':'')+
+          (opt.note?'<p class="lr-dlg-note">'+esc(opt.note)+'</p>':'')+
+          (opt.question?'<p class="lr-dlg-q">'+esc(opt.question)+'</p>':'')+
+        '</div>'+
+        '<div class="lr-dlg-f">'+
+          '<button type="button" class="lr-dlg-btn no">'+esc(opt.noText||"取消")+'</button>'+
+          '<button type="button" class="lr-dlg-btn ok">'+esc(opt.okText||"确定")+'</button>'+
+        '</div></div>';
+      mask.innerHTML=html;
+      function done(v){ if(mask.parentNode) mask.parentNode.removeChild(mask);
+        document.removeEventListener("keydown",onKey); resolve(!!v); }
+      function onKey(e){ if(e.key==="Escape") done(false); }
+      mask.querySelector(".lr-dlg-btn.no").onclick=function(){ done(false); };
+      mask.querySelector(".lr-dlg-btn.ok").onclick=function(){ done(true); };
+      mask.addEventListener("click",function(e){ if(e.target===mask) done(false); });
+      document.addEventListener("keydown",onKey);
+      document.body.appendChild(mask);
+      try{ mask.querySelector(".lr-dlg-btn.no").focus(); }catch(e){}
+    });
+  }
   function lrDateErr(s){
     if(!isValidDate8(s)) return "日期要填 8 位真实数字（如 20261119）";
     var t=today().replace(/-/g,"");
@@ -2410,65 +2445,79 @@
     if(!picked.length){ if(st) st.textContent="先勾一个检测项目再打印。"; return; }
     /* ★★ 打印前过期提醒：有效期（自动匹配/手填）早于今天 → 弹窗，可取消打印。
        过期仍可能是要打印的作废/复核记录，所以让用户选，不硬拦。 */
+    /* 真正送打印的主体（过期确认后 / 无过期时调用） */
+    function doPrint(){
+      /* ★ 批量：样品清单每一行 × 勾选的每个项目，一次全部送打印 */
+      var rows=lrActiveRows(), body="", pages=0;
+      var duplex=(lrDup()==="duplex");   // ★ 双面长边：每份记录从正面开始，奇数页补空白
+      if(!rows.length){
+        if(st) st.textContent="样品清单里一行都没勾（备注「已出」的不算）· 点行首方框或「全选」再打印。";
+        return;
+      }
+      rows.forEach(function(I){
+        picked.forEach(function(p){
+          var n0=pages;                  // 本份起始页（用于双面补空）
+          var g=(global.LABPAGES||{})[p.key];
+          if(!g||!g.pages||!g.pages.length){
+            body+='<div class="pg">'+lrFill(p.html,I)+'</div>'; pages++;
+          } else {
+            g.pages.forEach(function(src,i){
+              body+='<div class="pg" style="width:'+g.w+'pt;height:'+g.h+'pt">'+
+                    lrPageInner(g,i,src,true,I)+'</div>';
+              pages++;
+            });
+          }
+          /* 双面长边：一份记录占奇数页 → 背面补一张空白，下一份才落在正面 */
+          if(duplex && (pages-n0)%2===1){
+            body+='<div class="pg lr-blank" style="width:595.32pt;height:841.92pt"></div>';
+            pages++;
+          }
+        });
+      });
+      var w=window.open("","_blank");
+      if(!w){ if(st) st.textContent="浏览器拦了新窗口，请允许弹出窗口后重试。"; return; }
+      w.document.write('<!doctype html><html><head><meta charset="utf-8">'+
+        '<title></title><style>'+LR_PRINT_CSS+'</style></head><body>'+
+        body+'</body></html>');
+      w.document.close();
+      /* 位图全部解码完再送打印，避免出空白页 */
+      setTimeout(function(){
+        var d=w.document, imgs=d.querySelectorAll?[].slice.call(d.querySelectorAll("img.lr-pageimg")):[];
+        var tries=0;
+        (function wait(){
+          var ready=imgs.every(function(im){ return im.complete && im.naturalWidth>0; });
+          if(!imgs.length || ready || tries++>480){   // 批量页数多，慢网最多等 120 秒
+            w.focus(); w.print();
+          } else setTimeout(wait,250);
+        })();
+      },80);
+      if(st) st.textContent="已送打印："+rows.length+" 个样品 × "+picked.length+
+        " 个项目 = "+(rows.length*picked.length)+" 份记录 / "+pages+" 页"+
+        (duplex?"（双面已排版，请在打印窗口选「双面·长边翻转」，若目标为 PDF 需选实体打印机才有双面选项）":"（单面）");
+    }
+    /* ★★ 打印前过期提醒：居中弹窗，可取消打印 */
     var expired=lrExpiredForPrint(picked);
     if(expired.length){
-      var lines=expired.slice(0,12).map(function(x){
-        return "· "+x.name+"（"+x.project+"）有效期至 "+fmtDash(x.expiry);
-      }).join("\n");
-      if(expired.length>12) lines+="\n… 另有 "+(expired.length-12)+" 条已过期";
-      var msg="⚠ 以下标准溶液的有效期已过期（早于今天 "+today()+"）：\n\n"+lines+
-        "\n\n继续使用过期溶液出具的检测记录无效，请先重配并在「标准溶液维护」更新有效期。\n\n确定仍要继续打印吗？";
-      var go=false;
-      try{ go=global.confirm(msg); }catch(e){ go=window.confirm(msg); }
-      if(!go){ if(st) st.textContent="已取消打印："+expired.length+" 条标准溶液有效期已过期，请先更新。"; return; }
-    }
-    /* ★ 批量：样品清单每一行 × 勾选的每个项目，一次全部送打印 */
-    var rows=lrActiveRows(), body="", pages=0;
-    var duplex=(lrDup()==="duplex");   // ★ 双面长边：每份记录从正面开始，奇数页补空白
-    if(!rows.length){
-      if(st) st.textContent="样品清单里一行都没勾（备注「已出」的不算）· 点行首方框或「全选」再打印。";
+      var show=expired.slice(0,12).map(function(x){
+        return x.name+"（"+x.project+"）有效期至 "+fmtDash(x.expiry);
+      });
+      if(expired.length>12) show.push("… 另有 "+(expired.length-12)+" 条已过期");
+      lrConfirm({
+        title:"标准溶液有效期提醒",
+        sub:"检验原始记录工作台 · 打印前检查",
+        lead:"以下标准溶液的有效期已过期（早于今天",
+        leadDay:today()+"）",
+        items:show,
+        note:"继续使用过期溶液出具的检测记录无效，请先重配并在「标准溶液维护」更新有效期。",
+        question:"确定仍要继续打印吗？",
+        okText:"仍要打印", noText:"取消打印"
+      }).then(function(go){
+        if(go) doPrint();
+        else if(st) st.textContent="已取消打印："+expired.length+" 条标准溶液有效期已过期，请先更新。";
+      });
       return;
     }
-    rows.forEach(function(I){
-      picked.forEach(function(p){
-        var n0=pages;                  // 本份起始页（用于双面补空）
-        var g=(global.LABPAGES||{})[p.key];
-        if(!g||!g.pages||!g.pages.length){
-          body+='<div class="pg">'+lrFill(p.html,I)+'</div>'; pages++;
-        } else {
-          g.pages.forEach(function(src,i){
-            body+='<div class="pg" style="width:'+g.w+'pt;height:'+g.h+'pt">'+
-                  lrPageInner(g,i,src,true,I)+'</div>';
-            pages++;
-          });
-        }
-        /* 双面长边：一份记录占奇数页 → 背面补一张空白，下一份才落在正面 */
-        if(duplex && (pages-n0)%2===1){
-          body+='<div class="pg lr-blank" style="width:595.32pt;height:841.92pt"></div>';
-          pages++;
-        }
-      });
-    });
-    var w=window.open("","_blank");
-    if(!w){ if(st) st.textContent="浏览器拦了新窗口，请允许弹出窗口后重试。"; return; }
-    w.document.write('<!doctype html><html><head><meta charset="utf-8">'+
-      '<title></title><style>'+LR_PRINT_CSS+'</style></head><body>'+
-      body+'</body></html>');
-    w.document.close();
-    /* 位图全部解码完再送打印，避免出空白页 */
-    setTimeout(function(){
-      var d=w.document, imgs=d.querySelectorAll?[].slice.call(d.querySelectorAll("img.lr-pageimg")):[];
-      var tries=0;
-      (function wait(){
-        var ready=imgs.every(function(im){ return im.complete && im.naturalWidth>0; });
-        if(!imgs.length || ready || tries++>480){   // 批量页数多，慢网最多等 120 秒
-          w.focus(); w.print();
-        } else setTimeout(wait,250);
-      })();
-    },80);
-    if(st) st.textContent="已送打印："+rows.length+" 个样品 × "+picked.length+
-      " 个项目 = "+(rows.length*picked.length)+" 份记录 / "+pages+" 页"+
-      (duplex?"（双面已排版，请在打印窗口选「双面·长边翻转」，若目标为 PDF 需选实体打印机才有双面选项）":"（单面）");
+    doPrint();
   }
   function lrPrintOne(k){ lrPrint(k); }
 
