@@ -118,6 +118,11 @@ body{min-height:100vh}
   font-size:11px;color:var(--ink3)}
 .st-foot b{color:var(--ink2);font-weight:600}
 
+/* ★★★ 修复滚动变灰：主站内容包在 .app(z-index:1) 里盖住 body::before 固定渐变层；
+   本独立工作台没有 .app 包装，白色卡片会被 body::before(z-index:0) 蒙住泛灰。
+   这里显式把顶栏/数据卡/主体/页脚抬到渐变层之上，滚动时不再发灰。 */
+.st-head,.st-stats,.st-main,.st-foot{position:relative;z-index:1}
+
 /* ★ 工作台专属：分类/子组未选中标签不再发灰，保持深色清晰；数量角标加深 */
 .st-main .lr-grouptab,.st-main .lr-subgroup{color:#233247;font-weight:600}
 .st-main .lr-grouptab i,.st-main .lr-subgroup i{color:#334155;opacity:1;font-weight:700}
