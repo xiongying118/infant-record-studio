@@ -56,6 +56,7 @@ html,body{background:var(--bg-grad),var(--bg);background-attachment:fixed}
 body{min-height:100vh}
 
 /* 顶栏 */
+.st-brand{display:flex;align-items:center;gap:16px;text-align:left}
 .st-head{
   position:relative;overflow:hidden;color:#fff;
   background:linear-gradient(118deg,#0C2140 0%,#143258 46%,#1B3A6B 100%);
@@ -70,7 +71,7 @@ body{min-height:100vh}
   pointer-events:none;
 }
 .st-head-in{max-width:1360px;margin:0 auto;padding:20px 30px 18px;position:relative;z-index:1;
-  display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;flex-wrap:wrap}
 .st-logo{
   width:52px;height:52px;flex:0 0 52px;border-radius:14px;
   background:linear-gradient(145deg,var(--st-gold),#E0BE45);
@@ -79,9 +80,9 @@ body{min-height:100vh}
   box-shadow:0 6px 18px rgba(201,162,39,.32),inset 0 1px 0 rgba(255,255,255,.5);
 }
 .st-title h1{font-size:21px;font-weight:750;letter-spacing:.4px;margin:0;line-height:1.25}
-.st-title p{margin:4px 0 0;font-size:12.5px;color:#B9CBE4;letter-spacing:.3px}
-.st-title p b{color:var(--st-gold);font-weight:700}
-.st-head-side{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.st-title p{margin:4px 0 0;font-size:12.5px;color:#E4EDF9;letter-spacing:.3px;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.st-title p b{color:#F2D97A;font-weight:700}
+.st-head-side{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
 .st-chip{
   display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;
   background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);
@@ -117,6 +118,14 @@ body{min-height:100vh}
   font-size:11px;color:var(--ink3)}
 .st-foot b{color:var(--ink2);font-weight:600}
 
+/* ★ 工作台专属：分类/子组未选中标签不再发灰，保持深色清晰；数量角标加深 */
+.st-main .lr-grouptab,.st-main .lr-subgroup{color:#233247;font-weight:600}
+.st-main .lr-grouptab i,.st-main .lr-subgroup i{color:#334155;opacity:1;font-weight:700}
+.st-main .lr-grouptab.on,.st-main .lr-subgroup.on{color:#fff}
+.st-main .lr-grouptab.on i,.st-main .lr-subgroup.on i{color:rgba(255,255,255,.92)}
+.st-main .lr-grouptab[disabled],.st-main .lr-subgroup[disabled]{opacity:.55;color:#475467}
+.st-main .lr-chip .muted{color:#475467;font-weight:600}
+
 @media(max-width:860px){
   .st-head-in{padding:16px 16px 14px;gap:12px}
   .st-title h1{font-size:18px}
@@ -136,10 +145,12 @@ body{min-height:100vh}
 
 <header class="st-head">
   <div class="st-head-in">
-    <div class="st-logo">记</div>
-    <div class="st-title">
-      <h1>检验原始记录工作台</h1>
-      <p>婴幼儿配方食品检测中心 · <b>Word 原页 100% 复刻</b> · 一次勾选批量打印</p>
+    <div class="st-brand">
+      <div class="st-logo">记</div>
+      <div class="st-title">
+        <h1>检验原始记录工作台</h1>
+        <p>婴幼儿配方食品检测中心 · <b>Word 原页 100% 复刻</b> · 单选检测项目批量打印</p>
+      </div>
     </div>
     <div class="st-head-side">
       <span class="st-chip"><span class="dot"></span>本机已保存 · 刷新不丢</span>
