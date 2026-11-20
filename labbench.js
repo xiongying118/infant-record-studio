@@ -2050,14 +2050,13 @@
        ★ 按检测项目过滤，默认只出当前项目的，点「全部」才出全部 */
     h+=lrSolPanelHtml();
     h+='<div class="card" style="margin-bottom:12px"><div class="card-h">'+
-      '<h3>选择检测项目</h3><span class="muted">当前 '+gp.length+' 个 · 选 1 个 / 几个 / 全部都行</span><div class="sp"></div>'+
-      '<button class="btn sm" title="只选当前分类里的项目" onclick="LAB.lrAll()">全选本组</button>'+
+      '<h3>选择检测项目</h3><span class="muted">当前 '+gp.length+' 个 · 单选一个，点另一个自动切换</span><div class="sp"></div>'+
       '<button class="btn sm" onclick="LAB.lrNone()">清空</button>'+
       '<button class="btn pri sm" id="lrPrintBtn" onclick="LAB.lrPrint()">🖨 打印全部（'+total+' 份）</button></div>'+
       lrGroupTabsHtml()+
       '<div class="lr-chips">'+gp.map(function(p){
         return '<label class="lr-chip '+(s[p.key]?"on":"")+'">'+
-          '<input type="checkbox" '+(s[p.key]?"checked":"")+
+          '<input type="radio" name="lrProj" '+(s[p.key]?"checked":"")+
           ' onchange="LAB.lrToggle(\''+esc(p.key)+'\')">'+
           '<b>'+esc(p.name)+'</b>'+(p.unit?'<span class="muted">'+esc(p.unit)+'</span>':'')+
           '</label>';
@@ -2320,12 +2319,14 @@
   function lrToggle(k){
     if(!lrCan(k)){ lrAlert("【"+((lrProject(k)||{}).name||k)+"】不是当前操作人负责的项目，已锁定不能改。切到对应的操作人才能用。"); return; }
     var s=lrSel();
+    /* ★ 工作台口径：检测项目单选。点新的自动清空其他，点已选中的则取消 */
     if(s[k]){
       delete s[k];
       if(LRSOLVIEW===k) LRSOLVIEW=null;      // 取消该项目后回到跟随当前项目
     } else {
+      Object.keys(s).forEach(function(x){ delete s[x]; });  // 单选：清空其他
       s[k]=1;
-      if(lrSelected().length===1) LRSOLVIEW=k; // ★ 只点一个项目 → 只列它的标准溶液
+      LRSOLVIEW=k;                            // 只列当前这个项目的标准溶液
     }
     lrSave(); lrRedraw();
   }
