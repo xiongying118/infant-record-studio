@@ -1792,7 +1792,7 @@
         '<button type="button" class="btn sm" onclick="LAB.lrReagentSyncNow()">🔄 立即从试剂系统同步</button>'+
         '<label class="btn sm" style="cursor:pointer;margin:0;display:inline-flex;align-items:center">'+
           '↙ 从旧系统导入一次'+
-          '<input type="file" accept=".csv,.xlsx,.xls" style="display:none" '+
+          '<input type="file" accept=".csv,.xlsx,.xls,.xltx,.xlsm" style="display:none" '+
             'onchange="LAB.lrReagentFile(this)"></label>'+
         lrReagentDiagHtml()+
         '<span class="muted"><b>配制日期、有效期自动取自同站点的试剂效期管理系统</b>：那边一改，这里自动更新，不用手填；'+
@@ -1999,7 +1999,7 @@
     return '<div class="lr-importbar">'+
       '<button class="btn sm" onclick="LAB.lrAddRow()">＋ 添加一行</button>'+
       '<label class="btn sm lr-filebtn" for="lrFile">📥 导入 Excel / CSV</label>'+
-      '<input type="file" id="lrFile" accept=".xlsx,.xls,.csv,.txt" style="display:none" '+
+      '<input type="file" id="lrFile" accept=".xlsx,.xls,.xltx,.xlsm,.csv,.txt" style="display:none" '+
         'onchange="LAB.lrImportFile(this)">'+
       '<button class="btn sm" onclick="LAB.lrTogglePaste()">📋 粘贴 Excel 区域</button>'+
       '<button class="btn sm" onclick="LAB.lrTemplate()">⬇ 下载 Excel 模板</button>'+
@@ -2220,7 +2220,7 @@
   }
   function lrImportFile(inp){
     var f=inp&&inp.files&&inp.files[0]; if(!f) return;
-    var nm=(f.name||"").toLowerCase(), xl=/\.(xlsx|xls)$/.test(nm);
+    var nm=(f.name||"").toLowerCase(), xl=/\.(xlsx|xls|xltx|xlsm)$/.test(nm);
     var fr=new FileReader();
     fr.onload=function(e){
       var buf=e.target.result;
