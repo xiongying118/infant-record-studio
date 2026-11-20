@@ -862,6 +862,25 @@
     if(global.Store) global.Store.set("lab.record.duplex.v1",LRDUP);
     render();
   }
+  /* ★ 打印前过期提醒：扫描本次要打印的项目所涉及的标准溶液，
+     只要有一条有效期至（自动匹配/手填）早于今天，就弹窗提醒。
+     返回过期条目数组（空=没过期）。有效期可能带 . - / 分隔，统一归一成 8 位再比。 */
+  function lrExpiredForPrint(picked){
+    var O=lrSol(), t=today().replace(/-/g,""), bad=[], seen={};
+    (picked||[]).forEach(function(p){
+      (p.solutions||[]).forEach(function(s){
+        if(seen[s.name]) return; seen[s.name]=1;
+        var o=O[s.name]||{};
+        var raw=(o.expiry!=null?o.expiry:s.expiry);
+        if(raw==null||raw==="") return;
+        var d8=String(raw).replace(/\D/g,"");
+        if(!/^\d{8}$/.test(d8)) return;            // 非标准日期（如「现配现用」）跳过
+        if(/现配|即用/.test(String(raw))) return;   // 现配现用不算过期
+        if(d8<t) bad.push({name:s.name,expiry:d8,project:p.name});
+      });
+    });
+    return bad;
+  }
   function lrGroupTabsHtml(){
     var g=lrGroup();
     var vis=lrVisiblePs();
@@ -2389,6 +2408,20 @@
     var picked=only?[p0].filter(Boolean):lrSelected();
     var st=document.getElementById("lrStat");
     if(!picked.length){ if(st) st.textContent="先勾一个检测项目再打印。"; return; }
+    /* ★★ 打印前过期提醒：有效期（自动匹配/手填）早于今天 → 弹窗，可取消打印。
+       过期仍可能是要打印的作废/复核记录，所以让用户选，不硬拦。 */
+    var expired=lrExpiredForPrint(picked);
+    if(expired.length){
+      var lines=expired.slice(0,12).map(function(x){
+        return "· "+x.name+"（"+x.project+"）有效期至 "+fmtDash(x.expiry);
+      }).join("\n");
+      if(expired.length>12) lines+="\n… 另有 "+(expired.length-12)+" 条已过期";
+      var msg="⚠ 以下标准溶液的有效期已过期（早于今天 "+today()+"）：\n\n"+lines+
+        "\n\n继续使用过期溶液出具的检测记录无效，请先重配并在「标准溶液维护」更新有效期。\n\n确定仍要继续打印吗？";
+      var go=false;
+      try{ go=global.confirm(msg); }catch(e){ go=window.confirm(msg); }
+      if(!go){ if(st) st.textContent="已取消打印："+expired.length+" 条标准溶液有效期已过期，请先更新。"; return; }
+    }
     /* ★ 批量：样品清单每一行 × 勾选的每个项目，一次全部送打印 */
     var rows=lrActiveRows(), body="", pages=0;
     var duplex=(lrDup()==="duplex");   // ★ 双面长边：每份记录从正面开始，奇数页补空白
@@ -3003,6 +3036,7 @@
     lrSetGroup: lrSetGroup,
     lrDup: lrDup,
     lrSetDup: lrSetDup,
+    lrExpiredForPrint: lrExpiredForPrint,
     lrSubs: lrSubs,
     lrSub: lrSub,
     lrSetSub: lrSetSub,
