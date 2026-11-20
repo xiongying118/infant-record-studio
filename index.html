@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>检验原始记录工作台 · 婴幼儿配方食品检测中心</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+<!-- ★ 数据隔离：本工作台与主站、旧独立站的数据完全分开，互不影响。
+     但保留 reagentManager.* 不隔离，以便读取同站点试剂效期管理系统的数据。 -->
+<script>
+(function(){
+  try{
+    var P="recstudio:", LS=window.localStorage;
+    var SHARE=/^reagentManager\./;
+    function K(x){ return SHARE.test(String(x)) ? String(x) : P+x; }
+    var g=LS.getItem.bind(LS), s=LS.setItem.bind(LS), r=LS.removeItem.bind(LS), k=LS.key.bind(LS);
+    var lenGet=Object.getOwnPropertyDescriptor(Storage.prototype,"length").get;
+    function rawLen(){ return lenGet.call(LS); }
+    function mine(kk){ return !!kk && (kk.indexOf(P)===0 || SHARE.test(kk)); }
+    LS.getItem=function(x){ return g(K(x)); };
+    LS.setItem=function(x,v){ return s(K(x),v); };
+    LS.removeItem=function(x){ return r(K(x)); };
+    LS.key=function(i){
+      var n=0;
+      for(var j=0;j<rawLen();j++){ var kk=k(j);
+        if(mine(kk)){
+          if(n===i) return kk.indexOf(P)===0 ? kk.slice(P.length) : kk;
+          n++;
+        } }
+      return null;
+    };
+    Object.defineProperty(LS,"length",{configurable:true,get:function(){
+      var n=0; for(var j=0;j<rawLen();j++){ if(mine(k(j))) n++; } return n;
+    }});
+  }catch(e){}
+})();
+</script>
+
+<link rel="stylesheet" href="theme.css">
+<style>
+/* ============================================================
+   检验原始记录工作台 · 专属外壳样式
+   只做顶栏 / 概览 / 页脚；记录内容由 labbench.js 渲染进 #labBody，
+   沿用 theme.css 的 .card / .lr-* 体系，保证 Word 原页与打印不变。
+   ============================================================ */
+:root{
+  --st-navy:#0E2748; --st-navy2:#1B3A6B; --st-navy3:#244E8C;
+  --st-gold:#C9A227; --st-gold-soft:#FBF4DC;
+  --st-jade:#0E7C6B;
+}
+html,body{background:var(--bg-grad),var(--bg);background-attachment:fixed}
+body{min-height:100vh}
+
+/* 顶栏 */
+.st-head{
+  position:relative;overflow:hidden;color:#fff;
+  background:linear-gradient(118deg,#0C2140 0%,#143258 46%,#1B3A6B 100%);
+  border-bottom:3px solid var(--st-gold);
+  box-shadow:0 6px 26px rgba(14,39,72,.18);
+}
+.st-head::before{
+  content:"";position:absolute;inset:0;opacity:.5;
+  background:
+    radial-gradient(560px 260px at 8% -30%,rgba(201,162,39,.20),transparent 62%),
+    radial-gradient(520px 300px at 96% 120%,rgba(14,124,107,.22),transparent 60%);
+  pointer-events:none;
+}
+.st-head-in{max-width:1360px;margin:0 auto;padding:20px 30px 18px;position:relative;z-index:1;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.st-logo{
+  width:52px;height:52px;flex:0 0 52px;border-radius:14px;
+  background:linear-gradient(145deg,var(--st-gold),#E0BE45);
+  color:#1A2A12;display:flex;align-items:center;justify-content:center;
+  font-size:25px;font-weight:800;letter-spacing:-1px;
+  box-shadow:0 6px 18px rgba(201,162,39,.32),inset 0 1px 0 rgba(255,255,255,.5);
+}
+.st-title h1{font-size:21px;font-weight:750;letter-spacing:.4px;margin:0;line-height:1.25}
+.st-title p{margin:4px 0 0;font-size:12.5px;color:#B9CBE4;letter-spacing:.3px}
+.st-title p b{color:var(--st-gold);font-weight:700}
+.st-head-side{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.st-chip{
+  display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;
+  background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);
+  font-size:12px;color:#E7EEF9;backdrop-filter:blur(4px);
+}
+.st-chip .dot{width:7px;height:7px;border-radius:50%;background:#4ADE9B;box-shadow:0 0 0 3px rgba(74,222,155,.18)}
+.st-ver{font-variant-numeric:tabular-nums;color:#9FB6D6}
+
+/* 概览数据卡 */
+.st-stats{max-width:1360px;margin:-1px auto 0;padding:16px 30px 2px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.st-stat{
+  position:relative;background:#fff;border:1px solid var(--line);border-radius:14px;
+  padding:14px 18px 13px 20px;box-shadow:var(--sh-1);overflow:hidden;
+}
+.st-stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--st-navy3)}
+.st-stat.g::before{background:var(--st-gold)}
+.st-stat.j::before{background:var(--st-jade)}
+.st-stat .lb{font-size:11.5px;color:var(--ink3);letter-spacing:.4px}
+.st-stat .vl{font-size:26px;font-weight:780;color:var(--st-navy);line-height:1.15;margin-top:3px;font-variant-numeric:tabular-nums}
+.st-stat.g .vl{color:#A9821A}
+.st-stat.j .vl{color:var(--st-jade)}
+.st-stat .ex{font-size:11px;color:var(--ink3);margin-top:2px}
+
+/* 主体 */
+.st-main{max-width:1360px;margin:0 auto;padding:16px 30px 40px}
+.st-main .card{border-radius:14px;box-shadow:var(--sh-1)}
+.st-main .card:hover{box-shadow:var(--sh-2)}
+
+/* 页脚 */
+.st-foot{max-width:1360px;margin:0 auto;padding:6px 30px 26px;
+  display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  font-size:11px;color:var(--ink3)}
+.st-foot b{color:var(--ink2);font-weight:600}
+
+@media(max-width:860px){
+  .st-head-in{padding:16px 16px 14px;gap:12px}
+  .st-title h1{font-size:18px}
+  .st-stats{grid-template-columns:repeat(2,1fr);padding:14px 16px 2px;gap:10px}
+  .st-stat{padding:12px 14px 11px 16px}
+  .st-stat .vl{font-size:22px}
+  .st-main{padding:14px 16px 30px}
+  .st-foot{padding:4px 16px 20px}
+}
+@media(max-width:480px){
+  .st-head-side{width:100%;margin-left:0}
+  .st-logo{width:44px;height:44px;flex-basis:44px;font-size:21px}
+}
+</style>
+</head>
+<body>
+
+<header class="st-head">
+  <div class="st-head-in">
+    <div class="st-logo">记</div>
+    <div class="st-title">
+      <h1>检验原始记录工作台</h1>
+      <p>婴幼儿配方食品检测中心 · <b>Word 原页 100% 复刻</b> · 一次勾选批量打印</p>
+    </div>
+    <div class="st-head-side">
+      <span class="st-chip"><span class="dot"></span>本机已保存 · 刷新不丢</span>
+      <span class="st-chip st-ver">版本 <span id="stVer">—</span></span>
+    </div>
+  </div>
+</header>
+
+<section class="st-stats" aria-label="工作台概览">
+  <div class="st-stat"><div class="lb">检测项目</div><div class="vl" id="stProj">—</div><div class="ex">覆盖色谱 / 理化 / 原子三组</div></div>
+  <div class="st-stat g"><div class="lb">样品清单</div><div class="vl" id="stRows">—</div><div class="ex">可勾选单个或多个样品</div></div>
+  <div class="st-stat j"><div class="lb">已选项目</div><div class="vl" id="stSel">—</div><div class="ex">当前操作人可见范围</div></div>
+  <div class="st-stat"><div class="lb">待打印份数</div><div class="vl" id="stPrint">—</div><div class="ex">样品数 × 项目数</div></div>
+</section>
+
+<main class="st-main">
+  <div id="labBody"></div>
+</main>
+
+<footer class="st-foot">
+  <span>检验原始记录工作台 · 独立运行，数据仅保存在本机浏览器，不上传</span>
+  <span>底图源自 Word 原页矢量复刻 · <b>打印前请确认纸张为 A4 纵向、缩放 100%</b></span>
+</footer>
+
+<!-- 核心依赖：仅这 5 个 JS，其他模块一律不加载 -->
+<script src="store.js"></script>
+<script src="labrecord.js"></script>
+<script src="labpages.js"></script>
+<script src="labauth.js"></script>
+<script src="labbench.js"></script>
+
+<script>
+(function(){
+  function boot(){
+    if(window.LAB && typeof LAB.go==="function"){
+      try{ LAB.go("record"); }catch(e){ console.error(e); }
+    }
+    /* 顶栏概览：定时同步，跟随勾选/清单变化，不干扰记录区焦点 */
+    function upd(){
+      try{
+        var L=window.LAB; if(!L) return;
+        var ps=(window.LABREC&&LABREC.projects)||[];
+        var sel=(L.lrSelected&&L.lrSelected())||[];
+        var rows=(L.lrRows&&L.lrRows())||[];
+        var act=(L.lrActiveRows&&L.lrActiveRows())||[];
+        var pc=(L.lrPrintCount&&L.lrPrintCount())||0;
+        set("stProj",ps.length); set("stRows",rows.length);
+        set("stSel",sel.length); set("stPrint",pc);
+        set("stVer",(window.LABREC&&LABREC.v)||"");
+      }catch(e){}
+    }
+    function set(id,v){ var e=document.getElementById(id); if(e) e.textContent=String(v); }
+    upd();
+    setInterval(upd,1200);
+    window.addEventListener("storage",function(){ setTimeout(upd,60); });
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot);
+  else boot();
+})();
+</script>
+</body>
+</html>
