@@ -129,7 +129,12 @@ body{min-height:100vh}
 .st-main .lr-grouptab.on,.st-main .lr-subgroup.on{color:#fff}
 .st-main .lr-grouptab.on i,.st-main .lr-subgroup.on i{color:rgba(255,255,255,.92)}
 .st-main .lr-grouptab[disabled],.st-main .lr-subgroup[disabled]{opacity:.55;color:#475467}
+.st-main .lr-chip{color:#101828;font-weight:600}
 .st-main .lr-chip .muted{color:#475467;font-weight:600}
+/* ★ 选中态：深字压深蓝底看不清 → 改纯白，单位角标浅白 */
+.st-main .lr-chip.on{color:#fff;background:var(--brand);border-color:var(--brand)}
+.st-main .lr-chip.on b,.st-main .lr-chip.on .muted{color:#fff;font-weight:700}
+.st-main .lr-chip.on input{accent-color:#fff}
 
 @media(max-width:860px){
   .st-head-in{padding:16px 16px 14px;gap:12px}
