@@ -37,6 +37,7 @@
        · 标准溶液编码、有效期至 —— 保留 Word 原值；只有过期重配时
          在「标准溶液维护」里改一次，本机记住，打印时无需填写 */
   var LRMODE  = "project";    // project | method
+  var LRDUP   = "single";     // ★ 打印单双面：single=单面(默认) | duplex=双面长边
   var LRINFO  = null;         // 兼容旧数据：单条样品信息（lab.record.info.v2）
   var LRROWS  = null;         // ★ 样品清单（可 Excel 导入多行）[{sample,maker,batch,date}]
   var LRPREVIEW = 0;          // 当前预览的是清单里第几行（0 起）
@@ -849,6 +850,17 @@
     /* 离开色谱组时不重置子组：再切回来还停在用户上次选的子组 */
     /* 切组只影响「看哪些项目」，不擅自改已勾项目；全选/清空按当前组来 */
     lrSave(); render();
+  }
+  /* ★ 打印单/双面：默认单面，本机记住。single=单面 | duplex=双面长边 */
+  function lrDup(){
+    var v=global.Store?global.Store.get("lab.record.duplex.v1",null):null;
+    LRDUP=(v==="duplex"||v==="single")?v:"single";
+    return LRDUP;
+  }
+  function lrSetDup(v){
+    LRDUP=(v==="duplex")?"duplex":"single";
+    if(global.Store) global.Store.set("lab.record.duplex.v1",LRDUP);
+    render();
   }
   function lrGroupTabsHtml(){
     var g=lrGroup();
@@ -2052,6 +2064,13 @@
     h+='<div class="card" style="margin-bottom:12px"><div class="card-h">'+
       '<h3>选择检测项目</h3><span class="muted">当前 '+gp.length+' 个 · 单选一个，点另一个自动切换</span><div class="sp"></div>'+
       '<button class="btn sm" onclick="LAB.lrNone()">清空</button>'+
+      '<label class="lr-printdup" title="单面=每张纸印1页；双面=正反两面印，长边翻转（每份从正面开始）">'+
+        '<span>打印方式</span>'+
+        '<select onchange="LAB.lrSetDup(this.value)">'+
+          '<option value="single"'+(lrDup()==="single"?" selected":"")+'>单面</option>'+
+          '<option value="duplex"'+(lrDup()==="duplex"?" selected":"")+'>双面（长边）</option>'+
+        '</select>'+
+      '</label>'+
       '<button class="btn pri sm" id="lrPrintBtn" onclick="LAB.lrPrint()">🖨 打印全部（'+total+' 份）</button></div>'+
       lrGroupTabsHtml()+
       '<div class="lr-chips">'+gp.map(function(p){
@@ -2372,21 +2391,29 @@
     if(!picked.length){ if(st) st.textContent="先勾一个检测项目再打印。"; return; }
     /* ★ 批量：样品清单每一行 × 勾选的每个项目，一次全部送打印 */
     var rows=lrActiveRows(), body="", pages=0;
+    var duplex=(lrDup()==="duplex");   // ★ 双面长边：每份记录从正面开始，奇数页补空白
     if(!rows.length){
       if(st) st.textContent="样品清单里一行都没勾（备注「已出」的不算）· 点行首方框或「全选」再打印。";
       return;
     }
     rows.forEach(function(I){
       picked.forEach(function(p){
+        var n0=pages;                  // 本份起始页（用于双面补空）
         var g=(global.LABPAGES||{})[p.key];
         if(!g||!g.pages||!g.pages.length){
-          body+='<div class="pg">'+lrFill(p.html,I)+'</div>'; pages++; return;
+          body+='<div class="pg">'+lrFill(p.html,I)+'</div>'; pages++;
+        } else {
+          g.pages.forEach(function(src,i){
+            body+='<div class="pg" style="width:'+g.w+'pt;height:'+g.h+'pt">'+
+                  lrPageInner(g,i,src,true,I)+'</div>';
+            pages++;
+          });
         }
-        g.pages.forEach(function(src,i){
-          body+='<div class="pg" style="width:'+g.w+'pt;height:'+g.h+'pt">'+
-                lrPageInner(g,i,src,true,I)+'</div>';
+        /* 双面长边：一份记录占奇数页 → 背面补一张空白，下一份才落在正面 */
+        if(duplex && (pages-n0)%2===1){
+          body+='<div class="pg lr-blank" style="width:595.32pt;height:841.92pt"></div>';
           pages++;
-        });
+        }
       });
     });
     var w=window.open("","_blank");
@@ -2407,7 +2434,8 @@
       })();
     },80);
     if(st) st.textContent="已送打印："+rows.length+" 个样品 × "+picked.length+
-      " 个项目 = "+(rows.length*picked.length)+" 份记录 / "+pages+" 页";
+      " 个项目 = "+(rows.length*picked.length)+" 份记录 / "+pages+" 页"+
+      (duplex?"（双面已排版，请在打印窗口选「双面·长边翻转」，若目标为 PDF 需选实体打印机才有双面选项）":"（单面）");
   }
   function lrPrintOne(k){ lrPrint(k); }
 
@@ -2973,6 +3001,8 @@
     lrGroup: lrGroup,
     lrGroupProjects: lrGroupProjects,
     lrSetGroup: lrSetGroup,
+    lrDup: lrDup,
+    lrSetDup: lrSetDup,
     lrSubs: lrSubs,
     lrSub: lrSub,
     lrSetSub: lrSetSub,
