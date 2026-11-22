@@ -203,6 +203,17 @@ body{font-size:16px}
 .lr-dlg-btn.no{background:#EEF2F7;color:#344054;border-color:#D6DEE9}
 .lr-dlg-btn.no:hover{background:#E3E9F2}
 @media(max-width:480px){.lr-dlg-b{padding:18px 18px 6px;font-size:14px}.lr-dlg-f{padding:14px 18px 18px}}
+
+/* 说明默认收起，点「说明」才展开 */
+.lr-help{margin:8px 0 12px}
+.lr-help>summary{display:inline-flex;align-items:center;gap:6px;cursor:pointer;list-style:none;
+  font-size:12.5px;font-weight:600;color:var(--brand,#0f766e);padding:5px 12px;border-radius:7px;
+  background:rgba(15,118,110,.08);border:1px solid rgba(15,118,110,.22);user-select:none}
+.lr-help>summary::-webkit-details-marker{display:none}
+.lr-help>summary::before{content:'▸';font-size:10px;transition:transform .15s}
+.lr-help[open]>summary::before{transform:rotate(90deg)}
+.lr-help>summary:hover{background:rgba(15,118,110,.14)}
+.lr-help[open]>summary{margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -235,11 +246,11 @@ body{font-size:16px}
 </footer>
 
 <!-- 核心依赖：仅这 5 个 JS，其他模块一律不加载 -->
-<script src="store.js?v=20261122f"></script>
-<script src="labrecord.js?v=20261122f"></script>
-<script src="labpages.js?v=20261122f"></script>
-<script src="labauth.js?v=20261122f"></script>
-<script src="labbench.js?v=20261122f"></script>
+<script src="store.js?v=20261122g"></script>
+<script src="labrecord.js?v=20261122g"></script>
+<script src="labpages.js?v=20261122g"></script>
+<script src="labauth.js?v=20261122g"></script>
+<script src="labbench.js?v=20261122g"></script>
 
 <script>
 (function(){
