@@ -1078,7 +1078,7 @@
     mask.innerHTML='<div class="lr-dlg" role="alertdialog" aria-modal="true">'+
       '<div class="lr-dlg-h"><div class="lr-dlg-ic">⚠</div><div>'+
         '<h3>'+esc(name?(name+" · 填写提示"):"填写提示")+'</h3>'+
-        '<div class="lr-dlg-sub">分析检测中心 · 检验原始记录工作台</div>'+
+        '<div class="lr-dlg-sub">分析检测中心 · 原始记录系统</div>'+
       '</div></div>'+
       '<div class="lr-dlg-b">'+
         (body?'<p class="lr-dlg-lead" style="font-size:15px">'+esc(body)+'</p>':'')+
@@ -2508,7 +2508,7 @@
       if(expired.length>12) show.push("… 另有 "+(expired.length-12)+" 条已过期");
       lrConfirm({
         title:"标准溶液有效期提醒",
-        sub:"检验原始记录工作台 · 打印前检查",
+        sub:"原始记录系统 · 打印前检查",
         lead:"以下标准溶液的有效期已过期（早于今天",
         leadDay:today()+"）",
         items:show,
