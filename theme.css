@@ -1280,19 +1280,19 @@ span.lr-dyn:empty{display:inline-block;min-width:90px;min-height:14px;
   .lr-durow select{flex-basis:52px}
 }
 
-/* ★ 标准溶液维护面板：标签/输入框/子组字体放大醒目（只动工作台控件，Word 原页 .lr-dyn 不变） */
-.lr-solbar summary{font-size:14px}
-.lr-solrow b{font-size:14px;font-weight:700}
-.lr-solrow label{font-size:13px;color:var(--ink2)}
-.lr-solrow input,.lr-solrow select{font-size:14px;padding:7px 9px}
-.lr-solrow input::placeholder{font-size:13px}
-.lr-solkind{font-size:12px;font-weight:700;padding:2px 8px}
-.lr-soltab{font-size:13px;font-weight:600;padding:6px 13px}
-.lr-subgroup{font-size:13px}
-.lr-subgroup i{font-size:11px}
+/* ★ 标准溶液维护面板：字体再放大一档 + 加粗醒目（只动工作台控件，Word 原页 .lr-dyn 不变） */
+.lr-solbar summary{font-size:16px;font-weight:700}
+.lr-solrow b{font-size:16px;font-weight:800}
+.lr-solrow label{font-size:15px;font-weight:700;color:var(--ink)}
+.lr-solrow input,.lr-solrow select{font-size:16px;padding:8px 10px;font-weight:600}
+.lr-solrow input::placeholder{font-size:14px;color:#64748b}
+.lr-solkind{font-size:13px;font-weight:800;padding:3px 10px}
+.lr-soltab{font-size:15px;font-weight:700;padding:7px 15px}
+.lr-subgroup{font-size:15px;font-weight:600}
+.lr-subgroup i{font-size:12px}
 @media(max-width:720px){
-  .lr-solrow label{font-size:13px}
-  .lr-solrow input,.lr-solrow select{font-size:14px}
-  .lr-soltab{font-size:12px;padding:6px 10px}
-  .lr-subgroup{font-size:12px}
+  .lr-solrow label{font-size:14px}
+  .lr-solrow input,.lr-solrow select{font-size:15px}
+  .lr-soltab{font-size:13px;padding:6px 11px}
+  .lr-subgroup{font-size:14px}
 }
