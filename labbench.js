@@ -1057,10 +1057,46 @@
     return null;
   }
   function fmtDash(s){ return /^\d{8}$/.test(s)?s.slice(0,4)+"-"+s.slice(4,6)+"-"+s.slice(6,8):s; }
-  /* ★ 统一警示弹窗：走页面自带的居中自绘模态框（⚠ 醒目），不用原生 alert */
+  /* ★★★ 统一警示弹窗（2026-11-22）：跟 lrConfirm 同款——深墨蓝标题栏 +
+     金线 + ⚠ + 黄底明细 + 居中卡片。工作台没加载 toast，之前退回原生 alert
+     （浏览器灰底白框、标题带域名），很难看，这里彻底替掉。 */
   function lrAlert(msg){
-    try{ if(typeof global.toast==="function"){ global.toast(msg,"warn"); return; } }catch(e){}
-    try{ global.alert(msg); }catch(e){}
+    var text=String(msg==null?"":msg);
+    var lines=text.split(/\n+/).filter(function(s){ return s.trim(); });
+    var m=text.match(/^【([^】]+)】/);
+    var name=m?m[1]:"";
+    var first=(lines[0]||text).replace(/^【[^】]+】/,"").trim();
+    var restored=/已恢复原值/.test(text);
+    var body=first.replace(/[，,]?\s*已恢复原值。?\s*$/,"").replace(/。$/,"");
+    var items=lines.slice(1).filter(function(s){ return !/^已恢复原值/.test(s); });
+    /* 页面上可能已经有一个提示框：先清同类的，避免叠两层（原生 alert 是阻塞的） */
+    [].forEach.call(document.querySelectorAll(".lr-mask.lr-alertmask"),function(e){
+      if(e.parentNode) e.parentNode.removeChild(e);
+    });
+    var mask=document.createElement("div"); mask.className="lr-mask lr-alertmask";
+    var itemHtml=items.map(function(s){ return "<li>"+esc(s)+"</li>"; }).join("");
+    mask.innerHTML='<div class="lr-dlg" role="alertdialog" aria-modal="true">'+
+      '<div class="lr-dlg-h"><div class="lr-dlg-ic">⚠</div><div>'+
+        '<h3>'+esc(name?(name+" · 填写提示"):"填写提示")+'</h3>'+
+        '<div class="lr-dlg-sub">分析检测中心 · 检验原始记录工作台</div>'+
+      '</div></div>'+
+      '<div class="lr-dlg-b">'+
+        (body?'<p class="lr-dlg-lead" style="font-size:15px">'+esc(body)+'</p>':'')+
+        (itemHtml?'<div class="lr-dlg-list"><ul>'+itemHtml+'</ul></div>':'')+
+        (restored?'<p class="lr-dlg-note">已恢复原来的值，改好后重试即可。</p>':'')+
+      '</div>'+
+      '<div class="lr-dlg-f"><button type="button" class="lr-dlg-btn ok lr-alert-ok">知道了</button></div>'+
+    '</div>';
+    function done(){
+      if(mask.parentNode) mask.parentNode.removeChild(mask);
+      document.removeEventListener("keydown",onKey);
+    }
+    function onKey(e){ if(e.key==="Escape"||e.key==="Enter") done(); }
+    mask.querySelector(".lr-alert-ok").onclick=done;
+    mask.addEventListener("click",function(e){ if(e.target===mask) done(); });
+    document.addEventListener("keydown",onKey);
+    document.body.appendChild(mask);
+    try{ mask.querySelector(".lr-alert-ok").focus(); }catch(e){}
   }
   /* ★ 居中确认弹窗：替代原生 confirm，返回 Promise<boolean>。
      opt: {title, sub, lead, leadDay, items:[str], note, question, okText, noText} */
