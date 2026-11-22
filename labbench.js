@@ -1188,7 +1188,40 @@
      取消或口令不对立刻把输入恢复原值，用户看到的就是「无法选择、无法填」。
      口令体系（分工、配制人）仍留在 labauth.js，但不再拦截编辑。 */
   function solEdit(el, core, nameOverride, onCancel){
-    if(typeof core==="function") core();
+    var name=(typeof nameOverride==="string" ? nameOverride : "")
+             || (el && el.dataset ? el.dataset.name : "");
+    if(!name) name="";
+    var old=el?el.value:null;
+    /* 取消/输错口令时恢复：优先读本机已存的值（onchange 时 el 已是新值，
+       old 不可靠），没存过就留空或原表值。字段按 input 类型映射。 */
+    var restore=function(){
+      if(!el) return;
+      var O=(global.LAB.lrSol&&global.LAB.lrSol())||{};
+      var d=O[name]||{}, key=null;
+      if(el.classList && el.classList.contains("lr-pdate")) key="pdate";
+      else if(el.dataset && el.dataset.out==="code") key="code";
+      else if(el.dataset && el.dataset.out==="expiry") key="expiry";
+      else if(el.type==="number") key="dur";
+      if(key && d[key]!=null){ el.value=d[key]; return; }
+      if(nameOverride==="gos3" && el.dataset && el.dataset.mat){
+        var M=global.LAB.lrMat?global.LAB.lrMat():{}; el.value=M[el.dataset.mat]!=null?M[el.dataset.mat]:old;
+        return;
+      }
+      el.value=old;
+    };
+    var cancel=function(){
+      restore();
+      if(typeof onCancel==="function") onCancel();
+    };
+    ensureLabAuth(function(ok){
+      /* 缺口令文件（且补加载也失败）时绝不放行，避免缓存导致口令失效 */
+      if(ok){
+        /* ★ 没有溶液名 → 无法判定负责人 → 绝不放行（早期 bug 就是这里静默写了库） */
+        if(!name){ cancel(); lrAlert("无法识别该标准溶液，修改已取消。请刷新页面后重试。"); return; }
+        global.LABAUTH.editGuard(name, core, cancel);
+      }
+      else { cancel(); lrAlert("口令校验未能加载，修改已取消。请按 Ctrl+F5 强制刷新后重试。"); }
+    });
   }
   /* batch 只改批号，但也是标准溶液维护的一部分，同样要口令 */
   function lrSetSolBatch(el){
