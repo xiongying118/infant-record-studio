@@ -206,14 +206,15 @@
       });
   }
 
-  /* ---------------- 顶部状态条（2026-11-22：新工作台标准溶液直接可填） ---------------- */
+  /* ---------------- 顶部状态条（恢复口令闸门：改标准溶液要负责人口令） ---------------- */
   function barHtml(){
+    var a=ops();
     return '<div class="la-bar"><span class="la-dot on"></span>'+
-      '<b>标准溶液维护：配制日期 / 有效期可直接填写</b>'+
-      '<span class="la-ver" title="看到此版本即改动已加载">v20261122</span>'+
-      '<span class="la-desc">勾选项、预览、打印、样品清单大家都可用；'+
-      '改配制日期点 📅 或手输 8 位数字，改有效期填数字选天/月，编码和有效期至自动生成。'+
-      '负责人口令只用于查看分工和管理，不再拦填写。若看不到新版本号请 Ctrl+F5 刷新。</span>'+
+      '<b>标准溶液维护：改哪项要输该项目负责人的口令</b>'+
+      '<span class="la-ver" title="看到此版本即口令已恢复">v20261122f</span>'+
+      '<span class="la-desc">项目勾选、预览、打印、样品清单大家都可用；'+
+      '只有改标准溶液的配制日期 / 编码 / 有效期要输该溶液负责人的口令。'+
+      '口令初始=各自姓名，可自己改。若看不到新版本号请 Ctrl+F5 刷新。</span>'+
       '<span class="la-sp"></span>'+
       '<button type="button" class="btn sm pri" onclick="LABAUTH.showOwners()">看谁负责什么</button>'+
       '<button type="button" class="btn sm" onclick="LABAUTH.changePwd()">改我的口令</button>'+
