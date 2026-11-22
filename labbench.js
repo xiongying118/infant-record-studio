@@ -1880,6 +1880,7 @@
     var nm=(v==="all")?"全部":((lrProject(v)||{name:v}).name);
     return '<details class="lr-solbar" id="lrSolBar" style="margin-bottom:12px">'+
       '<summary id="lrSolSummary">标准溶液维护（当前：'+esc(nm)+'）· 只列这个项目的，点「全部」才出全部</summary>'+
+      '<details class="lr-help"><summary>说明</summary>'+
       '<div class="muted" style="font-size:11.5px;line-height:1.6;margin:8px 0 2px">'+
       '编码、批号和有效期至<b>打印时不用填</b>，默认就是 Word 原表里的值。'+
       lrVisiblePs().length+' 份原表里只有 '+lrSolProjects().length+
@@ -1888,7 +1889,7 @@
       '哪种溶液过期重新配制了，改一次本机记住，不用每次打印都改。'+
       '<br><b>需配制</b>的：填「配制日期」（可手写或点 📅 选，只收今天起 30 天内）自动生成编码，'+
       '填「有效期」数字选天/月自动生成有效期至（如 20261119 + 3月 → 20270218）。'+
-      '<b>外购</b>的：编码和有效期至手填，前缀填错会弹窗拦下。</div>'+
+      '<b>外购</b>的：编码和有效期至手填，前缀填错会弹窗拦下。</div></details>'+
       '<div class="lr-solacts">'+
         '<a class="btn sm pri" href="reagent/" target="_blank" rel="noopener" '+
           'style="text-decoration:none;display:inline-flex;align-items:center;gap:4px">🔗 打开试剂效期管理</a>'+
@@ -2136,14 +2137,15 @@
         ' '+gp.length+' 个</span><div class="sp"></div>'+
       '<button class="btn sm pri" onclick="LAB.lrMode(\'project\')">按检测项目</button>'+
       '<button class="btn sm" onclick="LAB.lrMode(\'method\')">按方法标准</button></div>'+
-      '<div class="notice" style="margin:10px 0"><span>📋</span><div>'+
+      '<details class="lr-help"><summary>📋 说明</summary>'+
+      '<div class="notice" style="margin:8px 0"><span>📋</span><div>'+
       '<b>Word 原页 100% 复刻</b>：每页直接用 Word 导出的原页，标题位置、字体字号、列宽行高、'+
       '框线、公式图、页码、哪一页放什么内容全部原样，打印不带浏览器页眉页脚。'+
       '只有<b>样品名称、生产商、批号/生产日期、检测日期</b>是动态位'+
       '（低聚半乳糖原表另有批号、干物质重量、GOS干含量三项可填）；'+
       '下面清单可以从 Excel 导入多行，<b>点每行左边方框选样品</b>（单选/多选/全选/反选都行），'+
       '再勾检测项目，<b>一次打印选中的样品 × 项目</b>。'+
-      '检测日期留空即可打印后手写。</div></div>'+
+      '检测日期留空即可打印后手写。</div></div></details>'+
       '<h4 class="lr-sub" id="lrSampleHead">样品清单（共 '+lrPickCount().all+' 个 · 已选 '+
       lrPickCount().on+' 个 · 点左边方框勾选）</h4>'+
       lrImportBarHtml()+lrRowsHtml()+
